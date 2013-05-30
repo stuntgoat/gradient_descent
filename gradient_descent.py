@@ -1,4 +1,15 @@
-from utils import scale_add, is_converged
+"""
+Gradient descent algorithm.
+"""
+
+def scale_add(vector, alpha, vector2):
+    """
+    Multiplies `alpha` by every value in `vector2`, then
+    adds that result with `vector`
+    """
+    v3 = [alpha * item for item in vector2]
+    return [x + y for x, y in zip(vector, v3)]
+
 
 class DiffFunc(object):
     """
@@ -18,23 +29,30 @@ class DiffFunc(object):
         """
         pass
 
+    def is_converged(self, vector1, vector2, threshold=1e-8):
+        """
+        Returns True if the difference of `vector1` and `vector2`
+        evaluated by the `diff_func.f` is less than the threshold;
+        """
+        return abs(self.f(vector1) - self.f(vector2)) < threshold
+
 
 def gradient_descent(initial_guess, alpha, diff_func, debug=False):
 
-    xt_old = initial_guess
+    last_guess = initial_guess
 
     # first iteration of gradient descent
-    xt = scale_add(xt_old, -alpha, diff_func.diff_of_f(xt_old))
-    n = 0
-    while not is_converged(xt_old, xt, diff_func):
+    outputs = scale_add(last_guess, -alpha, diff_func.diff_of_f(last_guess))
+    counter = 0
+    while not diff_func.is_converged(last_guess, outputs):
         # set first iteration of the old value to
-        xt_old = xt
-        xt = scale_add(xt_old, -alpha, diff_func.diff_of_f(xt_old))
-        n += 1
+        last_guess = outputs
+        outputs = scale_add(last_guess, -alpha, diff_func.diff_of_f(last_guess))
+        counter += 1
         if debug:
-            print 'iteration %d, value of f(%s) = %s' % (n, xt, diff_func.f(xt))
+            print 'iteration %d, value of f(%s) = %s' % (counter, outputs, diff_func.f(outputs))
 
-    return xt
+    return outputs
 
 if __name__ == '__main__':
     print
@@ -75,4 +93,4 @@ in this case,
             return [x_diff, y_diff]
 
     example_function = ExampleFunction()
-    print gradient_descent([100, 0], .55, example_function, debug=True)
+    print gradient_descent([100, 0], .1, example_function, debug=True)
